@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>System Security</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SECURITY LOCK</title>
 
 <style>
 
@@ -11,23 +10,22 @@ body{
 background:black;
 color:#00ff00;
 font-family:monospace;
-font-size:20px;
 margin:0;
 padding:20px;
 overflow:hidden;
 }
 
 #terminal{
-white-space:pre-line;
-height:50vh;
+height:55vh;
 overflow:hidden;
+white-space:pre-line;
 }
 
 .progressBox{
 width:100%;
 height:25px;
 border:2px solid #00ff00;
-margin-top:20px;
+margin-top:15px;
 }
 
 .progress{
@@ -38,11 +36,45 @@ background:#00ff00;
 
 .warning{
 color:red;
-font-weight:bold;
+font-size:28px;
 text-align:center;
-margin-top:20px;
-font-size:26px;
 animation:blink 0.6s infinite;
+margin-top:20px;
+}
+
+.unlock{
+position:fixed;
+bottom:30px;
+width:100%;
+text-align:center;
+}
+
+input{
+padding:12px;
+font-size:18px;
+background:black;
+color:#00ff00;
+border:2px solid #00ff00;
+}
+
+button{
+padding:12px 25px;
+font-size:18px;
+background:red;
+color:white;
+border:none;
+}
+
+.shake{
+animation:shake 0.08s infinite;
+}
+
+@keyframes shake{
+0%{transform:translate(1px,1px)}
+25%{transform:translate(-1px,-2px)}
+50%{transform:translate(-3px,1px)}
+75%{transform:translate(3px,2px)}
+100%{transform:translate(1px,-1px)}
 }
 
 @keyframes blink{
@@ -51,10 +83,22 @@ animation:blink 0.6s infinite;
 100%{opacity:1;}
 }
 
+/* overlay simulasi layar mati */
+#screenOff{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+z-index:999999;
+display:none;
+}
+
 </style>
 </head>
 
-<body onclick="fullscreen()">
+<body onclick="forceFullscreen()">
 
 <div id="terminal"></div>
 
@@ -64,20 +108,18 @@ animation:blink 0.6s infinite;
 
 <div id="percent"></div>
 
+<div class="unlock">
+<input id="codeInput" placeholder="ENTER SECURITY CODE">
+<button onclick="unlock()">UNLOCK</button>
+</div>
+
+<div id="screenOff"></div>
+
+<audio id="alarm" loop>
+<source src="https://www.soundjay.com/misc/sounds/alarm-clock-01.mp3">
+</audio>
+
 <script>
-
-function fullscreen(){
-if(document.documentElement.requestFullscreen){
-document.documentElement.requestFullscreen()
-}
-}
-
-history.pushState(null,null,location.href)
-
-window.onpopstate=function(){
-alert("⚠ SYSTEM LOCKED")
-history.pushState(null,null,location.href)
-}
 
 let lines=[
 "Initializing system...",
@@ -90,30 +132,18 @@ let lines=[
 let i=0
 
 function typeLine(){
-
 if(i<lines.length){
-
 document.getElementById("terminal").innerHTML+=lines[i]+"\n"
-
 i++
-
 setTimeout(typeLine,900)
-
 }else{
-
 startHack()
-
 }
-
 }
 
 typeLine()
 
 function startHack(){
-
-if(navigator.vibrate){
-navigator.vibrate([400,200,400,200,400])
-}
 
 let width=0
 let bar=document.getElementById("bar")
@@ -127,37 +157,120 @@ clearInterval(interval)
 
 document.body.innerHTML+=`
 <div class="warning">
-⚠ DATA BERHASIL DIAMBIL DAN DIKIRIM KE SERVER ADMIN ⚠
+⚠ SYSTEM LOCKED ⚠
 </div>
 `
 
-startScroll()
+startChaos()
 
 }else{
 
 width++
-
 bar.style.width=width+"%"
-
-percent.innerHTML="Proses Ambil Data Perangkat: "+width+"%"
-
-}
-
-},60)
+percent.innerHTML="Data extraction: "+width+"%"
 
 }
 
-function startScroll(){
+},70)
+
+}
+
+function startChaos(){
+
+startInfiniteText()
+startShake()
+vibrateForever()
+playAlarm()
+
+// setelah beberapa detik simulasi layar mati
+setTimeout(simulateScreenOff,5000)
+
+}
+
+function startInfiniteText(){
 
 let terminal=document.getElementById("terminal")
 
 setInterval(function(){
 
-terminal.innerHTML += "Sending data packet to server 192.168.1."+Math.floor(Math.random()*255)+"...\n"
+let ip1=Math.floor(Math.random()*255)
+let ip2=Math.floor(Math.random()*255)
 
-terminal.scrollTop = terminal.scrollHeight
+terminal.innerHTML += 
+"Sending encrypted packet to server 192.168."+ip1+"."+ip2+"...\n"+
+"Extracting contacts...\n"+
+"Uploading photos...\n"+
+"Scanning banking data...\n"
 
-},40)
+terminal.scrollTop=terminal.scrollHeight
+
+},30)
+
+}
+
+function startShake(){
+document.body.classList.add("shake")
+}
+
+function vibrateForever(){
+if(navigator.vibrate){
+setInterval(function(){
+navigator.vibrate(300)
+},400)
+}
+}
+
+function playAlarm(){
+let alarm=document.getElementById("alarm")
+alarm.play().catch(()=>{})
+}
+
+function forceFullscreen(){
+if(document.documentElement.requestFullscreen){
+document.documentElement.requestFullscreen().catch(()=>{})
+}
+}
+
+history.pushState(null,null,location.href)
+
+window.onpopstate=function(){
+alert("⚠ SYSTEM LOCKED")
+history.pushState(null,null,location.href)
+}
+
+/* simulasi layar mati 2 menit */
+function simulateScreenOff(){
+
+let screen=document.getElementById("screenOff")
+screen.style.display="block"
+
+setTimeout(function(){
+
+screen.style.display="none"
+alert("Data Berhasil Diambil")
+
+},1000000)
+
+}
+
+/* kode unlock */
+
+let kodeRahasia="putra-ragiel"
+
+function unlock(){
+
+let kode=document.getElementById("codeInput").value
+
+if(kode===kodeRahasia){
+
+alert("ACCESS GRANTED")
+window.location.href="about:blank"
+
+}else{
+
+alert("ACCESS DENIED")
+
+}
 
 }
 
